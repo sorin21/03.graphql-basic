@@ -7,3 +7,18 @@ npm run dev
 
 4. Start DB json
 npm run json:server
+
+5. Mutation
+mutation {
+  addUser(firstName: "Max", age: 26) {
+    id
+    firstName
+    age
+  }
+}
+
+mutation {
+  deleteUser(id: "23") {
+    id
+  }
+}

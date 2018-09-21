@@ -7,7 +7,8 @@ const {
   GraphQLString,
   GraphQLInt,
   GraphQLSchema,
-  GraphQLList
+  GraphQLList,
+  GraphQLNonNull
 } = graphql;
 
 // const users = [
@@ -94,17 +95,46 @@ const mutation = new GraphQLObjectType({
       type: UserType,
       // arguments that we pass in resolve func
       args: {
+        // GraphQLNotNull: when someone provides a mutation they must add firstName,age
+        firstName: {type: new GraphQLNonNull(GraphQLString)},
+        age: {type: new GraphQLNonNull(GraphQLInt)},
+        companyId: {type: GraphQLString}
+      },
+      resolve(parentValue, {firstName, age}) {
+        return axios.post(`http://localhost:3000/users`, {firstName, age})
+          .then(response => response.data);
+      }
+    },
+    deleteUser: {
+      type: UserType,
+      args: {
+        // don't call mutation if the id doesn't exist
+        id: {type: new GraphQLNonNull(GraphQLString)}
+      },
+      resolve(parentValue, {id}) {
+        return axios.delete(`http://localhost:3000/users/${id}`)
+          .then(response => response.data);
+      }
+    },
+    editUser: {
+      type: UserType,
+      // arguments that we pass in resolve func
+      args: {
+        id: {type: new GraphQLNonNull(GraphQLString)},
         firstName: {type: GraphQLString},
         age: {type: GraphQLInt},
         companyId: {type: GraphQLString}
       },
-      resolve() {
-
+      resolve(parentValue, args) {
+        return axios.patch(`http://localhost:3000/users/${args.id}`, args)
+          .then(response => response.data);
       }
     }
   }
 });
 
 module.exports = new GraphQLSchema({
-  query: RootQuery
+  query: RootQuery,
+  mutation
 });
+
